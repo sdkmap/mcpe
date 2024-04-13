@@ -46,6 +46,10 @@ jobs:
                 sudo apt-get install --no-install-recommends -y cmake ninja-build
           - name: Build
             run: ./build-wasm.sh
+          - uses: actions/upload-artifact@v4
+            with:
+             name: windows
+             path: .
     macos:
         name: macOS
         runs-on: macos-latest
