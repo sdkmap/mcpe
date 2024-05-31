@@ -31,12 +31,12 @@ LevelRenderer::LevelRenderer(Minecraft* pMC, Textures* pTexs)
 	field_60 = 0;
 	field_64 = 0;
 	field_68 = 0;
-	field_6C = 0;
-	field_70 = 0;
-	field_74 = 0;
-	field_78 = 0;
-	field_7C = 0;
-	field_80 = 0;
+	m_resortedMinX = 0;
+	m_resortedMinY = 0;
+	m_resortedMinZ = 0;
+	m_resortedMaxX = 0;
+	m_resortedMaxY = 0;
+	m_resortedMaxZ = 0;
 	m_pLevel = nullptr;
 	m_chunks = nullptr;
 	field_98 = nullptr;
@@ -157,15 +157,15 @@ void LevelRenderer::allChanged()
 	m_chunks = new Chunk* [m_chunksLength];
 	field_98 = new Chunk* [m_chunksLength];
 
-	field_6C = 0;
-	field_70 = 0;
-	field_74 = 0;
+	m_resortedMinX = 0;
+	m_resortedMinY = 0;
+	m_resortedMinZ = 0;
 
 	field_88.clear();
 
-	field_78 = field_A4;
-	field_80 = field_AC;
-	field_7C = field_A8;
+	m_resortedMaxX = field_A4;
+	m_resortedMaxY = field_AC;
+	m_resortedMaxZ = field_A8;
 
 	int x2 = 0, x3 = 0;
 
@@ -215,156 +215,69 @@ void LevelRenderer::allChanged()
 
 void LevelRenderer::resortChunks(int x, int y, int z)
 {
-	int field_A4; // r11
-	int z1; // r2
-	int field_AC; // r10
-	int x2; // r0
-	int x3; // r9
-	int x5; // r3
-	int x9; // r0
-	int x10; // r0
-	int field_78; // r3
-	int x11; // r7
-	int field_AC_1; // r5
-	int field_A8; // r6
-	int x12; // r0
-	int x13; // r8
-	int field_80; // r3
-	int x14; // r5
-	int field_A4_1; // r2
-	int x15; // r6
-	int x16; // r11
-	int field_7C; // r3
-	bool v25; // cc
-	Chunk** m_chunks; // r3
-	int x17; // r2
-	bool bIsDirty; // r6
-	int x6_1; // [sp+0h] [bp-58h]
-	int x8_1; // [sp+4h] [bp-54h]
-	int x1; // [sp+8h] [bp-50h]
-	int x10_1; // [sp+Ch] [bp-4Ch]
-	int x4; // [sp+10h] [bp-48h]
-	int x7; // [sp+1Ch] [bp-3Ch]
-	int x6; // [sp+20h] [bp-38h]
-	int x8; // [sp+24h] [bp-34h]
-	Chunk* pChunk; // [sp+2Ch] [bp-2Ch] BYREF
+	x -= 8;
+	y -= 8;
+	z -= 8;
+	m_resortedMinX = 0x7FFFFFFF;
+	m_resortedMinY = 0x7FFFFFFF;
+	m_resortedMinZ = 0x7FFFFFFF;
+	m_resortedMaxX = 0x80000000;
+	m_resortedMaxY = 0x80000000;
+	m_resortedMaxZ = 0x80000000;
 
-	field_A4 = this->field_A4;
-	z1 = 8 - z;
-	this->field_6C = 0x7FFFFFFF;
-	this->field_70 = 0x7FFFFFFF;
-	this->field_74 = 0x7FFFFFFF;
-	this->field_78 = 0x80000000;
-	this->field_7C = 0x80000000;
-	this->field_80 = 0x80000000;
-	if (field_A4 > 0)
+	int blkCount = field_A4 * 16;
+	int blkCntHalf = blkCount / 2;
+
+	for (int fx = 0; fx < field_A4; fx++)
 	{
-		x1 = 16 * field_A4;
-		field_AC = this->field_AC;
-		x2 = (16 * field_A4) >> 1;
-		x3 = 0;
-		x4 = x2 + 8 - x;
-		x5 = 1 - 16 * field_A4;
-		x6 = z1 + x2;
-		x7 = x5 + x4;
-		x8 = z1 + x2 + x5;
-		while (1)
+		int x1 = 16 * fx;
+		int x2 = x1 + blkCntHalf - x;
+		if (x2 < 0) x2 -= blkCount - 1;
+		x2 /= blkCount;
+		x1 -= blkCount * x2;
+
+		if (m_resortedMinX > x1)
+			m_resortedMinX = x1;
+		if (m_resortedMaxX < x1)
+			m_resortedMaxX = x1;
+
+		for (int fz = 0; fz < field_AC; fz++)
 		{
-			x9 = x4 & ~(x4 >> 31);
-			if (x4 < 0)
-				x9 = x7;
-			x10 = 16 * x3 - x1 * (x9 / x1);
-			field_78 = this->field_78;
-			x10_1 = x10;
-			if (x10 < this->field_6C)
-				this->field_6C = x10;
-			if (x10 > field_78)
-				this->field_78 = x10;
-			if (field_AC > 0)
-				break;
-		LABEL_32:
-			++x3;
-			x4 += 16;
-			x7 += 16;
-			if (field_A4 <= x3)
-				return;
-		}
-		x11 = 0;
-		field_AC_1 = field_AC;
-		field_A8 = this->field_A8;
-		x6_1 = x6;
-		x8_1 = x8;
-		while (1)
-		{
-			x12 = x6_1 & ~(x6_1 >> 31);
-			if (x6_1 < 0)
-				x12 = x8_1;
-			x13 = 16 * x11 - x1 * (x12 / x1);
-			field_80 = this->field_80;
-			if (x13 < this->field_74)
-				this->field_74 = x13;
-			if (x13 > field_80)
-				this->field_80 = x13;
-			if (field_A8 > 0)
-				break;
-		LABEL_30:
-			++x11;
-			x6_1 += 16;
-			x8_1 += 16;
-			if (field_AC_1 <= x11)
+			int z1 = 16 * fz;
+			int z2 = z1 + blkCntHalf - z;
+			if (z2 < 0) z2 -= blkCount - 1;
+			z2 /= blkCount;
+			z1 -= blkCount * z2;
+
+			if (m_resortedMinZ > z1)
+				m_resortedMinZ = z1;
+			if (m_resortedMaxZ < z1)
+				m_resortedMaxZ = z1;
+
+			for (int fy = 0; fy < field_A8; fy++)
 			{
-				field_AC = field_AC_1;
-				goto LABEL_32;
+				int y1 = 16 * fy;
+				if (m_resortedMinY > y1)
+					m_resortedMinY = y1;
+				if (m_resortedMaxY < y1)
+					m_resortedMaxY = y1;
+
+				Chunk* pChunk = m_chunks[(fz * field_A8 + fy) * field_A4 + fx];
+				bool wasDirty = pChunk->isDirty();
+				pChunk->setPos(x1, y1, z1);
+
+				if (!wasDirty && pChunk->isDirty())
+					field_88.push_back(pChunk);
 			}
 		}
-		x14 = 0;
-		for (field_A4_1 = field_A4; ; field_A4_1 = this->field_A4)
-		{
-			x15 = x14 + field_A8 * x11;
-			x16 = 16 * x14;
-			field_7C = this->field_7C;
-			if (this->field_70 > 16 * x14)
-				this->field_70 = x16;
-			v25 = field_7C < x16;
-			m_chunks = this->m_chunks;
-			x17 = x3 + field_A4_1 * x15;
-			if (v25)
-				this->field_7C = x16;
-			pChunk = m_chunks[x17];
-			bIsDirty = pChunk->isDirty();
-			pChunk->Chunk::setPos(x10_1, 16 * x14, x13);
-			if (bIsDirty || !pChunk->isDirty())
-				goto LABEL_19;
-
-			if (true) // need to expand
-				break;
-
-			++x14;
-
-			field_A8 = this->field_A8;
-
-			if (field_A8 <= x14)
-			{
-			LABEL_29:
-				field_A4 = this->field_A4;
-				field_AC_1 = this->field_AC;
-				goto LABEL_30;
-			}
-		LABEL_20:
-			;
-		}
-		this->field_88.push_back(pChunk);
-	LABEL_19:
-		field_A8 = this->field_A8;
-		if (field_A8 <= ++x14)
-			goto LABEL_29;
-		goto LABEL_20;
 	}
 }
 
 void LevelRenderer::entityAdded(Entity* pEnt)
 {
-	// TODO
+	if (pEnt->isPlayer())
+		// @HUH: Why would you do that?
+		EntityRenderDispatcher::getInstance()->onGraphicsReset();
 }
 
 std::string LevelRenderer::gatherStats1()
@@ -507,11 +420,8 @@ void LevelRenderer::render(Mob* pMob, int a, float b)
 	if (!a)
 		field_54 = field_58 = field_5C = field_60 = field_64 = 0;
 
-	//float mobX1 = pMob->m_pos.x;
 	float mobX2 = pMob->field_98.x + (pMob->m_pos.x - pMob->field_98.x) * b;
-	//float mobY1 = pMob->m_pos.y;
 	float mobY2 = pMob->field_98.y + (pMob->m_pos.y - pMob->field_98.y) * b;
-	//float mobZ1 = pMob->m_pos.z;
 	float mobZ2 = pMob->field_98.z + (pMob->m_pos.z - pMob->field_98.z) * b;
 
 	float dX = pMob->m_pos.x - field_4, dY = pMob->m_pos.y - field_8, dZ = pMob->m_pos.z - field_C;
@@ -526,111 +436,83 @@ void LevelRenderer::render(Mob* pMob, int a, float b)
 		std::sort(&field_98[0], &field_98[m_chunksLength], DistanceChunkSorter(pMob));
 	}
 
-	// @TODO: Fix goto hell
-
 	// @NOTE: Field_B8 doesn't appear to be used??
 	if (field_B8 && !a && !m_pMinecraft->getOptions()->m_bAnaglyphs)
 	{
-		checkQueryResults(0, 16);
-
+		int c = 16;
+		checkQueryResults(0, c);
+		
 		// @HUH: why 16?
-		for (int i = 0; i < 16; i++)
-		{
+		for (int i = 0; i < c; i++)
 			field_98[i]->field_4D = true;
-		}
 
-		int x1 = renderChunks(0, 16, 0, b);
-		int x2 = 16, x3;
+		int d = renderChunks(0, c, 0, b);
 
-		while (true)
+		do
 		{
-			x3 = 2 * x2;
-			if (x3 >= m_chunksLength)
-				x3 = m_chunksLength;
+			int cold = c;
+			c *= 2;
+			if (c > m_chunksLength)
+				c = m_chunksLength;
 
 			glDisable(GL_TEXTURE_2D);
+			glDisable(GL_LIGHTING);
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_FOG);
 			glColorMask(false, false, false, false);
 			glDepthMask(false);
-			if (x2 < x3)
-				break;
-		label_37:
-			glDepthMask(true);
-			glColorMask(true, true, true, true);
-			glEnable(GL_TEXTURE_2D);
-			glEnable(GL_ALPHA_TEST);
-			glEnable(GL_FOG);
+			checkQueryResults(cold, c);
 
-			int res = renderChunks(x2, x3, 0, b);
-			x1 += res;
-			if (x3 >= m_chunksLength)
-				return;
-			x2 = x3;
-		}
+			glPushMatrix();
 
-		float y1 = 0.0f;
-		int y2 = x2;
-		int y3 = x2;
-		float y4 = 0.0f, y5 = 0.0f;
+			float lastX = 0.0f, lastY = 0.0f, lastZ = 0.0f;
 
-		while (true)
-		{
-			while (!field_98[y2]->isEmpty())
+			for (int i = cold; i < c; i++)
 			{
-				Chunk* pChunk = field_98[y2];
-
-				if (!pChunk->m_bVisible)
+				if (m_chunks[i]->isEmpty())
 				{
-					pChunk->field_4D = true;
-					goto label_26;
+					m_chunks[i]->m_bVisible = false;
+					continue;
 				}
 
-				if (pChunk->field_4E)
-					goto label_26;
+				if (!m_chunks[i]->m_bVisible)
+				{
+					m_chunks[i]->field_4D = true;
+					continue;
+				}
 
-				float y6 = pChunk->distanceToSqr(pMob);
-				int y7 = int(Mth::sqrt(y6) / 128.0f + 1.0f);
+				if (!m_chunks[i]->field_4E)
+					continue;
 
-				if (m_ticksSinceStart % y7 != y3 % y7)
-					goto label_26;
+				int roughDist = int(Mth::sqrt(m_chunks[i]->distanceToSqr(pMob)) / 128.0f + 1.0f);
 
+				if (m_ticksSinceStart % roughDist != i % roughDist)
+					continue;
+				
 				float fXdiff, fYdiff, fZdiff;
-				fXdiff = float(pChunk->m_pos.x) - mobX2 - y5;
-				fYdiff = float(pChunk->m_pos.y) - mobY2 - y4;
-				fZdiff = float(pChunk->m_pos.z) - mobZ2 - y1;
+				fXdiff = float(m_chunks[i]->m_pos.x) - mobX2 - lastX;
+				fYdiff = float(m_chunks[i]->m_pos.y) - mobY2 - lastY;
+				fZdiff = float(m_chunks[i]->m_pos.z) - mobZ2 - lastZ;
 
 				if (fXdiff != 0.0f || fYdiff != 0.0f || fZdiff != 0.0f)
 				{
-					y5 += fXdiff;
-					y4 += fYdiff;
-					y1 += fZdiff;
 					glTranslatef(fXdiff, fYdiff, fZdiff);
+
+					lastX += fXdiff;
+					lastY += fYdiff;
+					lastZ += fZdiff;
 				}
 
-				pChunk->renderBB();
-
-				y3++;
-				y2++;
-				//pChunk->field_4E++;
-				pChunk->field_4E = true;
-				if (y3 == x3)
-					goto label_37;
+				m_chunks[i]->renderBB();
+				m_chunks[i]->field_4E = true;
 			}
-
-			field_98[y2]->m_bVisible = 0;
-		label_26:
-			y3++;
-			y2++;
-
-			if (y3 == x3)
-				goto label_37;
-
-			continue;
 		}
+		while (c < m_chunksLength);
 	}
-
-	renderChunks(0, m_chunksLength, a, b);
+	else
+	{
+		renderChunks(0, m_chunksLength, a, b);
+	}
 }
 
 void LevelRenderer::setLevel(Level* level)
@@ -705,246 +587,117 @@ void LevelRenderer::tick()
 	m_ticksSinceStart++;
 }
 
-/*
-void LevelRenderer::updateDirtyChunks(Mob* pMob, bool b)
-{
-	// @TODO This updates 16 chunks per frame. Not good.
-
-	int updated = 0;
-	for (int i = 0; i < 16 && i < int(field_88.size()); i++)
-	{
-		Chunk* pChk = field_88[i];
-		pChk->rebuild();
-		pChk->setClean();
-		updated++;
-	}
-
-	field_88.erase(field_88.begin(), field_88.begin() + updated);
-}
-*/
-
 typedef std::vector<Chunk*> ChunkVector;
 typedef ChunkVector::iterator ChunkVectorIterator;
 
 bool LevelRenderer::updateDirtyChunks(Mob* pMob, bool b)
 {
-	// @TODO: untangle this thing
-
-	int v3; // r4
-	ChunkVectorIterator field_88_Beg; // r3
-	size_t size; // r9
-	int v8; // r11
-	Chunk* v9; // r0
-	ChunkVector* xvec; // r5
-	int v11; // r7
-	ChunkVectorIterator v12; // r1
-	int v13; // r7
-	Chunk* v14; // r1
-	bool v15; // r0
-	int v16; // r3
-	int v17; // r7
-	int v18; // r2
-	ChunkVectorIterator v19; // r1
-	ChunkVectorIterator v20; // r0
-	size_t v21; // r8
-	size_t v22; // r4
-	ChunkVector* v23; // r10
-	size_t v24; // r8
-	Chunk* v25; // r5
-	int v26; // r4
-	int v27; // r8
-	Chunk* v28; // r5
-	bool v29; // r3
-	ChunkVectorIterator v31; // r1
-	size_t v32; // r5
-	int v33; // r0
-	int v34; // r3
-	Chunk* v35; // r2
-	Chunk** v38; // r3
-	Chunk* v39; // r2
-	ChunkVector* v40; // r0
-	Chunk* v42[3]; // [sp+1Ch] [bp+0h] BYREF
-	Chunk* a3; // [sp+28h] [bp+Ch] BYREF
-	Entity* pMob_1; // [sp+2Ch] [bp+10h] BYREF
-
-	v3 = 0;
-	pMob_1 = pMob;
+	constexpr int C_MAX = 3;
 	DirtyChunkSorter dcs(pMob);
-	memset(v42, 0, sizeof v42);
-	field_88_Beg = this->field_88.begin();
-	size = this->field_88.end() - field_88_Beg;
-	if (size <= 0)
-	{
-		v8 = 0;
-		goto LABEL_28;
-	}
-	v8 = 0;
-	v9 = *field_88_Beg;
-	xvec = 0;
-	v11 = 0;
-	a3 = *field_88_Beg;
-	if (!b)
-		goto LABEL_11;
-	while (1)
-	{
-		if (!v9->m_bVisible)
-			goto LABEL_9;
-	LABEL_5:
-		if (!xvec)
-		{
-			++v8;
-			v40 = new ChunkVector;
-			v12 = v40->end();
-			xvec = v40;
-		LABEL_55:
-			xvec->insert(v12, a3);
-			goto LABEL_8;
-		}
-		v12 = xvec->end();
-		++v8;
-		if (true) // (v12 == xvec->capacity)
-			goto LABEL_55;
-		xvec->insert(v12, a3);
-	LABEL_8:
-		field_88[v11] = 0;
-	LABEL_9:
+	Chunk* pChunks[C_MAX] = { nullptr };
+	ChunkVector* pVec = nullptr;
 
-		if (++v3 == size)
-			break;
-		while (1)
+	int nr1 = 0;
+	int sz = int(field_88.size());
+	for (int i = 0; i < sz; i++)
+	{
+		Chunk* pChunk = field_88[i];
+		if (!b)
 		{
-			v11 = v3;
-			v9 = field_88[v3];
-			a3 = v9;
-			if (b)
-				break;
-		LABEL_11:
-			if (v9->distanceToSqr(pMob) <= 1024.0f)
-				goto LABEL_5;
-			v13 = b;
-			while (1)
+			if (pChunk->distanceToSqr(pMob) > 1024.0f)
 			{
-				v14 = v42[v13];
-				if (v14)
+				int j;
+				// find place to insert this chunk within the pChunks array
+				for (j = 0; j < C_MAX; j++)
 				{
-					v15 = dcs(v14, a3);
-					v16 = v13;
-					if (!v15)
+					if (pChunks[j] && !dcs(pChunks[j], pChunk))
 						break;
 				}
-				if (++v13 == 3)
-				{
-					v17 = 2;
-					v18 = 1;
-					v16 = 3;
-					goto LABEL_51;
+				// insert it
+				if (--j <= 0)
+					continue;
+				
+				for (int k = j; --k != 0;) {
+					pChunks[k - 1] = pChunks[k];
 				}
-			}
-			v17 = v13 - 1;
-			if (v17 <= 0)
-				goto LABEL_9;
-			v18 = v17 - 1;
-			if (v17 == 1)
-			{
-				v42[1] = a3;
-				goto LABEL_18;
-			}
-		LABEL_51:
-			v38 = &v42[v16];
-			v39 = v42[v18];
-			do
-			{
-				*(v38 - 3) = v39;
-				--v38;
-			} while (v38 != &v42[2]);
-			v42[v17] = a3;
-		LABEL_18:
-			if (++v3 == size)
-				goto LABEL_19;
-		}
-	}
-LABEL_19:
-	if (xvec)
-	{
-		v19 = xvec->end();
-		v20 = xvec->begin();
-		v21 = v19 - xvec->begin();
-		if (v21 > 1)
-		{
-			std::sort(v20, v19, dcs);
-			v20 = xvec->begin();
-			v21 = xvec->end() - xvec->begin();
-		}
-		v22 = v21 - 1;
-		if ((int)(v21 - 1) >= 0)
-		{
-			v23 = xvec;
-			v24 = v21 - 1;// v21 + 0x3FFFFFFF;
-			while (1)
-			{
-				v25 = v20[v24--];
-				v25->rebuild();
-				v25->setClean();
-				if ((--v22 & 0x80000000) != 0)
-					break;
-				v20 = v23->begin();
-			}
-			xvec = v23;
-		}
 
-		delete xvec;
-	}
-LABEL_28:
-	v26 = 2;
-	v27 = 0;
-	while (2)
-	{
-		v28 = v42[v26];
-		if (!v28)
+				pChunks[j] = pChunk;
+				continue;
+			}
+		}
+		else if (!pChunk->m_bVisible)
 		{
-		LABEL_33:
-			if (v26-- == 0)
-				goto LABEL_34;
 			continue;
 		}
-		break;
+
+		if (!pVec)
+			pVec = new ChunkVector;
+
+		nr1++;
+		pVec->push_back(pChunk);
+		field_88[i] = nullptr;
 	}
-	v29 = v28->m_bVisible;
-	if (v28->m_bVisible || v26 == 2)
+
+	if (pVec)
 	{
-		++v27;
-		v42[v26]->rebuild();
-		v28->setClean();
-		goto LABEL_33;
+		if (pVec->size() > 1)
+			std::sort(pVec->begin(), pVec->end(), dcs);
+
+		for (int i = int(pVec->size()) - 1; i >= 0; i--)
+		{
+			(*pVec)[i]->rebuild();
+			(*pVec)[i]->setClean();
+		}
+
+		SAFE_DELETE(pVec);
 	}
-	v42[v26] = (Chunk*)v29;
-	v42[0] = (Chunk*)v29;
-LABEL_34:
-	v31 = this->field_88.begin();
-	v32 = this->field_88.end() - v31;
-	if (v32)
+
+	int nr2 = 0;
+	for (int m = C_MAX - 1; m >= 0; m--)
 	{
-		v33 = 0;
-		v34 = 0;
-		while (1)
+		if (!pChunks[m])
+			continue;
+
+		if (!pChunks[m]->m_bVisible && m != C_MAX - 1)
 		{
-			v35 = v31[v34];
-			if (v35 && v42[0] != v35 && v42[1] != v35 && v42[2] != v35)
-			{
-				if (v33 != v34)
-					v31[v33] = v35;
-				++v33;
-			}
-			if (++v34 == v32)
-				break;
-			v31 = this->field_88.begin();
+			pChunks[m] = nullptr;
+			pChunks[0] = nullptr;
+			break;
 		}
-		if (v34 > v33)
-		{
-			field_88.resize(v33);
-		}
+
+		pChunks[m]->rebuild();
+		pChunks[m]->setClean();
+		nr2++;
 	}
-	return v27 + v8 == size;
+
+	int nr3 = 0;
+	int nr4 = 0;
+	for (; nr4 < int(field_88.size()); nr4++)
+	{
+		Chunk* pChunk = field_88[nr4];
+		if (!pChunk)
+			continue;
+
+		bool flag = false;
+		for (int j = 0; j < C_MAX; j++)
+		{
+			if (pChunk == pChunks[j])
+				flag = true;
+		}
+
+		if (flag)
+			continue;
+
+		if (nr3 != nr4)
+			field_88[nr3] = pChunk;
+
+		nr3++;
+	}
+
+	if (nr4 > nr3)
+		field_88.erase(field_88.begin() + nr3, field_88.end());
+
+	return nr1 + nr2 == sz;
 }
 
 void LevelRenderer::renderHit(Player* pPlayer, const HitResult& hr, int i, void* vp, float f)
